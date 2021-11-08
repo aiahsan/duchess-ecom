@@ -1,6 +1,8 @@
 import React from 'react';
-
+import {useSelector} from 'react-redux'
 export default () => {
+  const wishlist = useSelector((x) => x.Wishlist);
+  const cart=useSelector(x=>x.Cart)
   return (
     <>
       <div>
@@ -51,7 +53,7 @@ export default () => {
             <div className='row'>
               <div className='col-12 px-0 mx-auto'>
                 <nav className='navbar navbar-expand-lg navbar-light'>
-                  <a href=''>
+                  <a href='/'>
                     <img
                       src='images/logo.png'
                       alt=''
@@ -185,7 +187,9 @@ export default () => {
                         </a>
                       </li>
                       <li className='mx-2 mt-2 p-0 medium  '>
+                        
                         <a href='cart'>
+                        {cart.items.length>0?  <div>{cart.items.length}</div>:<></>}
                           <svg
                             xmlns='http://www.w3.org/2000/svg'
                             width='21.717'
@@ -211,6 +215,7 @@ export default () => {
                       </li>
                       <li className='mx-2 mt-2 p-0 medium  '>
                         <a href='wishlist'>
+                        {wishlist.items.length>0?  <div>{wishlist.items.length}</div>:<></>}
                           <svg
                             xmlns='http://www.w3.org/2000/svg'
                             width='20.432'

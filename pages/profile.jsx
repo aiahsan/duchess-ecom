@@ -1,8 +1,14 @@
 import React from 'react';
 import Head from '../components/Head';
 import Navbar from '../components/navbar';
+import { GetServerSideProps } from 'next';
+import {wrapper } from '../redux/store';
+import cookieCutter from 'cookie-cutter'
+import { useRouter } from 'next/router'
 
 export default () => {
+  const router = useRouter()
+
   return (
     <div>
       <Head title='Shop Hair' />
@@ -28,14 +34,17 @@ export default () => {
                     <li className='active'>
                       <a href='profile'>My Profile</a>
                     </li>
-                    <li>
+                    {/* <li>
                       <a href='orders'>Orders</a>
-                    </li>
-                    <li>
+                    </li> */}
+                    {/* <li>
                       <a href='change-password'>Change Password</a>
-                    </li>
+                    </li> */}
                     <li>
-                      <a href='login'>Log Out</a>
+                      <a onClick={()=>{
+                          cookieCutter.set('token', '', { expires: new Date(0) })
+                          router.replace('login')
+                      }}>Log Out</a>
                     </li>
                   </ul>
                 </div>
@@ -159,3 +168,23 @@ export default () => {
     </div>
   );
 };
+ 
+export const getServerSideProps = wrapper.getServerSideProps(store => ({req, res, ...etc}) => {
+
+  const {Tokken}= store.getState();
+     
+     if (Tokken!=null) {
+       return {
+         redirect: {
+           destination: '/login',
+           permanent: false,
+         },
+       };
+     }
+     // return { props: {} };
+ }
+ )
+ 
+ 
+ 
+ 

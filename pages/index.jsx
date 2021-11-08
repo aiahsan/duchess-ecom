@@ -1,17 +1,85 @@
-import Navbar from '../components/navbar';
-import Head from '../components/Head';
-
-import dynamic from 'next/dynamic';
-const OwlCarousel = dynamic(() => import('react-owl-carousel'), { ssr: false });
 
 import 'owl.carousel/dist/assets/owl.carousel.css';
 import 'owl.carousel/dist/assets/owl.theme.default.css';
+import React from 'react';
+import Navbar from '../components/navbar';
+import Head from '../components/Head';
+import TopComp from '../components/topComp';
+import dynamic from 'next/dynamic';
+import GetinTouch from '../components/getInTouchForm';
+import { repository } from '../utiles/repository';
+import _ from 'lodash';
+dynamic(() => import('react-owl-carousel'), { ssr: false });
+const OwlCarousel = dynamic(() => import('react-owl-carousel'), { ssr: false });
 
 export default function Home() {
+  const [showanimation, setshowanimation] = React.useState(false);
+  const [showComponent, setshowComponent] = React.useState(false);
+  const [showmessage, setshowmessage] = React.useState(false);
+  const [message, setmessage] = React.useState('');
+
+  const [products, setproducts] = React.useState([]);
+  const [viewproducts, setviewproducts] = React.useState([]);
+  const [testimonials, settestimonials] = React.useState([]);
+  const [galleries, setgalleries] = React.useState([]);
+  const [categories, setcategories] = React.useState([]);
+  const [category, setCategory] = React.useState();
+  const handleCategory = (categoryitem) => {
+    if (categoryitem) {
+      setCategory(categoryitem);
+      const hairCollaction = products.filter(
+        (x) => x.isHairCollection && x.isHairCollection == true
+      );
+
+      setviewproducts(
+        hairCollaction.filter((x) => x.category.id == categoryitem.id)
+      );
+    } else {
+      setCategory(undefined);
+    }
+  };
+  React.useEffect(() => {
+
+    // typeof document !== undefined
+    // ? require("bootstrap/dist/js/bootstrap.bundle")
+    // : null;
+    
+    setshowanimation(true);
+    setshowComponent(true);
+    try {
+      (async () => {
+        const { data, status } = await repository.dashboard().then((x) => x);
+        console.log(data, status);
+        if (status == 200) {
+          setproducts(data.data.products);
+          settestimonials(data.data.testimonials);
+          setgalleries(data.data.galleries);
+          setcategories(data.data.categories);
+          setviewproducts(
+            data.data.products.filter(
+              (x) => x.isHairCollection && x.isHairCollection == true
+            )
+          );
+          setshowanimation(false);
+        } else {
+          setshowanimation(false);
+        }
+      })();
+    } catch (e) {
+      setshowanimation(false);
+    }
+  }, []);
   return (
     <div>
+      <TopComp
+        showmessage={showmessage}
+        setshowmessage={setshowmessage}
+        message={message}
+        showanimation={showanimation}
+      />
+
       <Head title='Home' />
-      <div>
+    {showComponent==true?   <div>
         <div className='wrapper'>
           <header>
             <Navbar />
@@ -90,69 +158,28 @@ export default function Home() {
                   <ul className='nav nav-tabs' id='myTab' role='tablist'>
                     <li className='nav-item' role='presentation'>
                       <a
-                        className='nav-link active'
-                        id='all-tab'
-                        data-toggle='tab'
-                        href='#all'
-                        role='tab'
-                        aria-controls='all'
-                        aria-selected='true'
+                        onClick={() => handleCategory(undefined)}
+                        className={`nav-link ${
+                          category == undefined ? 'active' : ''
+                        }`}
                       >
                         All
                       </a>
                     </li>
-                    <li className='nav-item' role='presentation'>
-                      <a
-                        className='nav-link'
-                        id='extension-tab'
-                        data-toggle='tab'
-                        href='#extension'
-                        role='tab'
-                        aria-controls='extension'
-                        aria-selected='false'
-                      >
-                        Hair Extensions
-                      </a>
-                    </li>
-                    <li className='nav-item' role='presentation'>
-                      <a
-                        className='nav-link'
-                        id='wigs-tab'
-                        data-toggle='tab'
-                        href='#wigs'
-                        role='tab'
-                        aria-controls='wigs'
-                        aria-selected='false'
-                      >
-                        Lacy Wigs
-                      </a>
-                    </li>
-                    <li className='nav-item' role='presentation'>
-                      <a
-                        className='nav-link'
-                        id='pony-tab'
-                        data-toggle='tab'
-                        href='#pony'
-                        role='tab'
-                        aria-controls='pony'
-                        aria-selected='false'
-                      >
-                        Pony Tails
-                      </a>
-                    </li>
-                    <li className='nav-item' role='presentation'>
-                      <a
-                        className='nav-link'
-                        id='accessories-tab'
-                        data-toggle='tab'
-                        href='#accessories'
-                        role='tab'
-                        aria-controls='accessories'
-                        aria-selected='false'
-                      >
-                        Hair Accessories
-                      </a>
-                    </li>
+                    {categories.map((x, i) => (
+                      <li key={i} className='nav-item' role='presentation'>
+                        <a
+                          onClick={() => handleCategory(x)}
+                          className={`nav-link ${
+                            category && category.id && category.id == x.id
+                              ? 'active'
+                              : ''
+                          }`}
+                        >
+                          {x.name ? x.name : ''}
+                        </a>
+                      </li>
+                    ))}
                   </ul>
                   <div className='tab-content' id='myTabContent'>
                     <div
@@ -183,84 +210,23 @@ export default function Home() {
                           },
                         }}
                       >
-                        <div className='item'>
-                          <img
-                            src='images/collection-1.png'
-                            alt=''
-                            className='img-fluid'
-                          />
-                          <p className='mt-3 mb-1'>Spiral Hair Ties</p>
-                          <p className='mt-0 golden-text semi-bold'>£16.00</p>
-                        </div>
-                        <div className='item'>
-                          <img
-                            src='images/collection-2.png'
-                            alt=''
-                            className='img-fluid'
-                          />
-                          <p className='mt-3 mb-1'>Hair bands</p>
-                          <p className='mt-0 golden-text semi-bold'>£16.00</p>
-                        </div>
-                        <div className='item'>
-                          <img
-                            src='images/collection-3.png'
-                            alt=''
-                            className='img-fluid'
-                          />
-                          <p className='mt-3 mb-1'>Nice Hair bands</p>
-                          <p className='mt-0 semi-bold'>
-                            <del>£18.00</del>{' '}
-                            <span className='golden-text'> £16.00</span>
-                          </p>
-                        </div>
-                        <div className='item'>
-                          <img
-                            src='images/collection-4.png'
-                            alt=''
-                            className='img-fluid'
-                          />
-                          <p className='mt-3 mb-1'>Hair Scrunchies</p>
-                          <p className='mt-0 golden-text semi-bold'>£16.00</p>
-                        </div>
-                        <div className='item'>
-                          <img
-                            src='images/collection-1.png'
-                            alt=''
-                            className='img-fluid'
-                          />
-                          <p className='mt-3 mb-1'>Spiral Hair Ties</p>
-                          <p className='mt-0 golden-text semi-bold'>£16.00</p>
-                        </div>
-                        <div className='item'>
-                          <img
-                            src='images/collection-2.png'
-                            alt=''
-                            className='img-fluid'
-                          />
-                          <p className='mt-3 mb-1'>Hair bands</p>
-                          <p className='mt-0 golden-text semi-bold'>£16.00</p>
-                        </div>
-                        <div className='item'>
-                          <img
-                            src='images/collection-3.png'
-                            alt=''
-                            className='img-fluid'
-                          />
-                          <p className='mt-3 mb-1'>Nice Hair bands</p>
-                          <p className='mt-0 semi-bold'>
-                            <del>£18.00</del>{' '}
-                            <span className='golden-text'> £16.00</span>
-                          </p>
-                        </div>
-                        <div className='item'>
-                          <img
-                            src='images/collection-4.png'
-                            alt=''
-                            className='img-fluid'
-                          />
-                          <p className='mt-3 mb-1'>Hair Scrunchies</p>
-                          <p className='mt-0 golden-text semi-bold'>£16.00</p>
-                        </div>
+                        {viewproducts.map((x) => (
+                          <div className='item'>
+                            <img
+                              src={
+                                x.images && x.images[0]
+                                  ? x.images[0]
+                                  : 'https://st3.depositphotos.com/23594922/31822/v/600/depositphotos_318221368-stock-illustration-missing-picture-page-for-website.jpg'
+                              }
+                              alt=''
+                              className='img-fluid'
+                            />
+                            <p className='mt-3 mb-1'>{x.name ? x.name : ''}</p>
+                            <p className='mt-0 golden-text semi-bold'>
+                              £{x.price ? x.price : 0}
+                            </p>
+                          </div>
+                        ))}
                       </OwlCarousel>
 
                       <a
@@ -681,86 +647,32 @@ export default function Home() {
                     }}
                     className='collection-carousel mt-lg-5 mt-4 owl-theme'
                   >
-                    <div className='item'>
-                      <img
-                        src='images/seller-1.png'
-                        alt=''
-                        className='img-fluid'
-                      />
-                      <p className='mt-3 semi-bold mb-1'>Pony Tails</p>
-                      <p className='mt-0 mb-1'>Medium Pony Tail</p>
-                      <p className='mt-0 golden-text semi-bold'>£18.00</p>
-                    </div>
-                    <div className='item'>
-                      <img
-                        src='images/seller-2.png'
-                        alt=''
-                        className='img-fluid'
-                      />
-                      <p className='mt-3 semi-bold mb-1'>Lacy Wigs</p>
-                      <p className='mt-0 mb-1'>Brown Lacy Wig</p>
-                      <p className='mt-0 golden-text semi-bold'>£23.00</p>
-                    </div>
-                    <div className='item'>
-                      <img
-                        src='images/seller-3.png'
-                        alt=''
-                        className='img-fluid'
-                      />
-                      <p className='mt-3 semi-bold mb-1'>Hair Extensions</p>
-                      <p className='mt-0 mb-1'>Tick Black Extension</p>
-                      <p className='mt-0 semi-bold golden-text'>£35.00</p>
-                    </div>
-                    <div className='item'>
-                      <img
-                        src='images/seller-4.png'
-                        alt=''
-                        className='img-fluid'
-                      />
-                      <p className='mt-3 semi-bold mb-1'>Accessories</p>
-                      <p className='mt-0 mb-1'>Hair Scrunchies</p>
-                      <p className='mt-0 golden-text semi-bold'>£12.50</p>
-                    </div>
-                    <div className='item'>
-                      <img
-                        src='images/seller-1.png'
-                        alt=''
-                        className='img-fluid'
-                      />
-                      <p className='mt-3 semi-bold mb-1'>Pony Tails</p>
-                      <p className='mt-0 mb-1'>Medium Pony Tail</p>
-                      <p className='mt-0 golden-text semi-bold'>£18.00</p>
-                    </div>
-                    <div className='item'>
-                      <img
-                        src='images/seller-2.png'
-                        alt=''
-                        className='img-fluid'
-                      />
-                      <p className='mt-3 semi-bold mb-1'>Lacy Wigs</p>
-                      <p className='mt-0 mb-1'>Brown Lacy Wig</p>
-                      <p className='mt-0 golden-text semi-bold'>£23.00</p>
-                    </div>
-                    <div className='item'>
-                      <img
-                        src='images/seller-3.png'
-                        alt=''
-                        className='img-fluid'
-                      />
-                      <p className='mt-3 semi-bold mb-1'>Hair Extensions</p>
-                      <p className='mt-0 mb-1'>Tick Black Extension</p>
-                      <p className='mt-0 semi-bold golden-text'>£35.00</p>
-                    </div>
-                    <div className='item'>
-                      <img
-                        src='images/seller-4.png'
-                        alt=''
-                        className='img-fluid'
-                      />
-                      <p className='mt-3 semi-bold mb-1'>Accessories</p>
-                      <p className='mt-0 mb-1'>Hair Scrunchies</p>
-                      <p className='mt-0 golden-text semi-bold'>£12.50</p>
-                    </div>
+                    {_.sortBy(products)
+                      .slice(0, 9)
+                      .map((x, i) => (
+                        <div className='item'>
+                          <img
+                            src={
+                              x.images && x.images[0]
+                                ? x.images[0]
+                                : 'https://st3.depositphotos.com/23594922/31822/v/600/depositphotos_318221368-stock-illustration-missing-picture-page-for-website.jpg'
+                            }
+                            alt=''
+                            className='img-fluid'
+                          />
+                          <p className='mt-3 semi-bold mb-1'>
+                            {x.name ? x.name : ''}
+                          </p>
+                          <p className='mt-0 mb-1'>
+                            {x.category & x.category.name
+                              ? x.category.name
+                              : ''}
+                          </p>
+                          <p className='mt-0 golden-text semi-bold'>
+                            £{x.price ? x.price : 0}
+                          </p>
+                        </div>
+                      ))}
                   </OwlCarousel>
                 </div>
               </div>
@@ -798,56 +710,28 @@ export default function Home() {
                     }}
                     className='testimonial-carousel mt-lg-5 mt-4 owl-theme'
                   >
-                    <div className='item'>
-                      <div className='testimonial-inner'>
-                        <div className='media d-md-flex d-block align-items-center'>
-                          <img
-                            src='images/testimonial-img.png'
-                            alt=''
-                            className='img-fluid testimonial-img'
-                          />
-                          <div className='media-body ml-md-4 mt-3 mt-lg-0'>
-                            <p className='p-lg grey-text mb-1'>
-                              One of the best pony tails I ever found in online
-                              shopping. Simply love it! Its so easy to use and
-                              it create longer &amp; thicker ponytail instantly.
-                            </p>
-                            <p className='p-lg grey-text mb-1'>
-                              Thank You Duchess for this amazing Product. Highly
-                              Recommended!
-                            </p>
-                            <p className='p-lg mt-md-5 mt-3 medium'>
-                              Olivia Redrigo
-                            </p>
+                    {testimonials.map((x, i) => (
+                      <div className='item'>
+                        <div className='testimonial-inner'>
+                          <div className='media d-md-flex d-block align-items-center'>
+                            <img
+                              src={x.image ? x.image : ''}
+                              alt=''
+                              className='nobrd img-fluid testimonial-img'
+                            />
+                            <div className='media-body ml-md-4 mt-3 mt-lg-0'>
+                              <p className='p-lg grey-text mb-1'>
+                                {x.review ? x.review : ''}
+                              </p>
+
+                              <p className='p-lg mt-md-5 mt-3 medium'>
+                                {x.name ? x.name : ''}
+                              </p>
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                    <div className='item'>
-                      <div className='testimonial-inner'>
-                        <div className='media d-md-flex d-block align-items-center'>
-                          <img
-                            src='images/testimonial-img.png'
-                            alt=''
-                            className='img-fluid testimonial-img'
-                          />
-                          <div className='media-body ml-md-4 mt-3 mt-lg-0'>
-                            <p className='p-lg grey-text mb-1'>
-                              One of the best pony tails I ever found in online
-                              shopping. Simply love it! Its so easy to use and
-                              it create longer &amp; thicker ponytail instantly.
-                            </p>
-                            <p className='p-lg grey-text mb-1'>
-                              Thank You Duchess for this amazing Product. Highly
-                              Recommended!
-                            </p>
-                            <p className='p-lg mt-md-5 mt-3 medium'>
-                              Olivia Redrigo
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                    ))}
                   </OwlCarousel>
                 </div>
               </div>
@@ -855,7 +739,8 @@ export default function Home() {
           </section>
           {/* hair-collection ends here */}
           {/* hair-collection starts here */}
-          <section className='hair-collection text-center py-md-5 py-4'>
+         
+          {/* <section className='hair-collection text-center py-md-5 py-4'>
             <div className='container'>
               <div className='row'>
                 <div className='col-12'>
@@ -887,62 +772,19 @@ export default function Home() {
                     }}
                     className='collection-carousel mt-lg-5 mt-4 owl-theme'
                   >
-                    <div className='item'>
-                      <img
-                        src='images/gallery-1.png'
-                        alt=''
-                        className='img-fluid'
-                      />
-                    </div>
-                    <div className='item'>
-                      <img
-                        src='images/gallery-2.png'
-                        alt=''
-                        className='img-fluid'
-                      />
-                    </div>
-                    <div className='item'>
-                      <img
-                        src='images/gallery-3.png'
-                        alt=''
-                        className='img-fluid'
-                      />
-                    </div>
-                    <div className='item'>
-                      <img
-                        src='images/gallery-4.png'
-                        alt=''
-                        className='img-fluid'
-                      />
-                    </div>
-                    <div className='item'>
-                      <img
-                        src='images/gallery-1.png'
-                        alt=''
-                        className='img-fluid'
-                      />
-                    </div>
-                    <div className='item'>
-                      <img
-                        src='images/gallery-2.png'
-                        alt=''
-                        className='img-fluid'
-                      />
-                    </div>
-                    <div className='item'>
-                      <img
-                        src='images/gallery-3.png'
-                        alt=''
-                        className='img-fluid'
-                      />
-                    </div>
-                    <div className='item'>
-                      <img
-                        src='images/gallery-4.png'
-                        alt=''
-                        className='img-fluid'
-                      />
-                    </div>
+                    {galleries.map((x, i) => (
+                      <div className='item'>
+                        <img
+                          src={
+                            x.image
+                              ? x.image
+                              : 'https://st3.depositphotos.com/23594922/31822/v/600/depositphotos_318221368-stock-illustration-missing-picture-page-for-website.jpg'
+                          }
+                          alt=''
+                          className='img-fluid nobrd'
+                        />
+                      </div>
+                    ))}
                   </OwlCarousel>
                   <div></div>
                   <a
@@ -955,6 +797,8 @@ export default function Home() {
               </div>
             </div>
           </section>
+      */}
+     
           {/* hair-collection ends here */}
           {/* hair-collection starts here */}
           <section className='hair-collection why-us py-md-5 py-4'>
@@ -1122,64 +966,18 @@ export default function Home() {
                   </p>
                 </div>
               </div>
-              <form action='#_'>
-                <div className='row'>
-                  <div className='col-lg-6 mt-4'>
-                    <input
-                      type='text'
-                      placeholder='First Name'
-                      className='site-input w-100 px-3 py-sm-3 py-2'
-                    />
-                  </div>
-                  <div className='col-lg-6 mt-4'>
-                    <input
-                      type='text'
-                      placeholder='Last Name'
-                      className='site-input w-100 px-3 py-sm-3 py-2'
-                    />
-                  </div>
-                  <div className='col-lg-6 mt-4'>
-                    <input
-                      type='text'
-                      placeholder='Email'
-                      className='site-input w-100 px-3 py-sm-3 py-2'
-                    />
-                  </div>
-                  <div className='col-lg-6 mt-4'>
-                    <input
-                      type='text'
-                      placeholder='Subject'
-                      className='site-input w-100 px-3 py-sm-3 py-2'
-                    />
-                  </div>
-                  <div className='col-12 mt-4'>
-                    <textarea
-                      name
-                      id
-                      cols={30}
-                      rows={7}
-                      placeholder='Your message'
-                      className='site-input w-100 p-3'
-                      defaultValue={''}
-                    />
-                  </div>
-                  <div className='col-12 mt-4 text-center'>
-                    <button
-                      className='site-btn mb-2 text-capitalize px-5 py-2'
-                      type='submit'
-                    >
-                      Send Message
-                    </button>
-                  </div>
-                </div>
-              </form>
+              <GetinTouch
+                setshowmessage={setshowmessage}
+                setmessage={setmessage}
+                setshowanimation={setshowanimation}
+              />
             </div>
           </section>
-          {/* hair-collection ends here */}
-          {/*?php include('site-footer.php') ?*/}
+       
         </div>
         <div className='overlay' />
       </div>
+   :<></>}
     </div>
   );
 }
