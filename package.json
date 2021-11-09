@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@zeit/next-sass": "^1.0.1",
     "apisauce": "^2.1.1",
     "bootstrap": "4.0.0",
     "cookie": "^0.4.1",
